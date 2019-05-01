@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		610A1C392279642A00D286EE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C382279642A00D286EE /* main.cpp */; };
+		610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C3F2279694A00D286EE /* fast_ALS.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		610A1C352279642A00D286EE /* fast_ALS */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = fast_ALS; sourceTree = BUILT_PRODUCTS_DIR; };
 		610A1C382279642A00D286EE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		610A1C3F2279694A00D286EE /* fast_ALS.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fast_ALS.cpp; sourceTree = "<group>"; };
+		610A1C402279694A00D286EE /* fast_ALS.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = fast_ALS.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				610A1C382279642A00D286EE /* main.cpp */,
+				610A1C3F2279694A00D286EE /* fast_ALS.cpp */,
+				610A1C402279694A00D286EE /* fast_ALS.hpp */,
 			);
 			path = fast_ALS;
 			sourceTree = "<group>";
@@ -118,6 +123,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */,
 				610A1C392279642A00D286EE /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -239,7 +245,9 @@
 		610A1C3D2279642A00D286EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/yangsong/Desktop/eigen3 ";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -247,7 +255,9 @@
 		610A1C3E2279642A00D286EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/yangsong/Desktop/eigen3 ";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
