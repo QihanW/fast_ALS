@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		610A1C392279642A00D286EE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C382279642A00D286EE /* main.cpp */; };
 		610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C3F2279694A00D286EE /* fast_ALS.cpp */; };
+		610A1C43227970E200D286EE /* rating.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C42227970E200D286EE /* rating.cpp */; };
+		610A1C46227E190D00D286EE /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C44227E190D00D286EE /* time.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +30,9 @@
 		610A1C382279642A00D286EE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		610A1C3F2279694A00D286EE /* fast_ALS.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fast_ALS.cpp; sourceTree = "<group>"; };
 		610A1C402279694A00D286EE /* fast_ALS.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = fast_ALS.hpp; sourceTree = "<group>"; };
+		610A1C42227970E200D286EE /* rating.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rating.cpp; sourceTree = "<group>"; };
+		610A1C44227E190D00D286EE /* time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = time.cpp; sourceTree = "<group>"; };
+		610A1C45227E190D00D286EE /* time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +68,9 @@
 				610A1C382279642A00D286EE /* main.cpp */,
 				610A1C3F2279694A00D286EE /* fast_ALS.cpp */,
 				610A1C402279694A00D286EE /* fast_ALS.hpp */,
+				610A1C42227970E200D286EE /* rating.cpp */,
+				610A1C44227E190D00D286EE /* time.cpp */,
+				610A1C45227E190D00D286EE /* time.hpp */,
 			);
 			path = fast_ALS;
 			sourceTree = "<group>";
@@ -123,7 +131,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				610A1C46227E190D00D286EE /* time.cpp in Sources */,
 				610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */,
+				610A1C43227970E200D286EE /* rating.cpp in Sources */,
 				610A1C392279642A00D286EE /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
