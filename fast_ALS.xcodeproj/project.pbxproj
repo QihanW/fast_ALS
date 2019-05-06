@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		610A1C392279642A00D286EE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C382279642A00D286EE /* main.cpp */; };
-		610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C3F2279694A00D286EE /* fast_ALS.cpp */; };
-		610A1C43227970E200D286EE /* rating.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C42227970E200D286EE /* rating.cpp */; };
-		610A1C46227E190D00D286EE /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C44227E190D00D286EE /* time.cpp */; };
+		610A1C412279694A00D286EE /* fast_ALS.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C3F2279694A00D286EE /* fast_ALS.hpp */; };
+		610A1C43227970E200D286EE /* rating.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C42227970E200D286EE /* rating.hpp */; };
+		610A1C46227E190D00D286EE /* time.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 610A1C44227E190D00D286EE /* time.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,12 +27,12 @@
 
 /* Begin PBXFileReference section */
 		610A1C352279642A00D286EE /* fast_ALS */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = fast_ALS; sourceTree = BUILT_PRODUCTS_DIR; };
-		610A1C382279642A00D286EE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		610A1C3F2279694A00D286EE /* fast_ALS.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fast_ALS.cpp; sourceTree = "<group>"; };
-		610A1C402279694A00D286EE /* fast_ALS.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = fast_ALS.hpp; sourceTree = "<group>"; };
-		610A1C42227970E200D286EE /* rating.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rating.cpp; sourceTree = "<group>"; };
-		610A1C44227E190D00D286EE /* time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = time.cpp; sourceTree = "<group>"; };
-		610A1C45227E190D00D286EE /* time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
+		610A1C382279642A00D286EE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		610A1C3F2279694A00D286EE /* fast_ALS.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = fast_ALS.hpp; sourceTree = "<group>"; };
+		610A1C402279694A00D286EE /* fast_ALS.hpp.bak */ = {isa = PBXFileReference; lastKnownFileType = text; path = fast_ALS.hpp.bak; sourceTree = "<group>"; };
+		610A1C42227970E200D286EE /* rating.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rating.hpp; sourceTree = "<group>"; };
+		610A1C44227E190D00D286EE /* time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = time.hpp; sourceTree = "<group>"; };
+		610A1C45227E190D00D286EE /* time.hpp.bak */ = {isa = PBXFileReference; lastKnownFileType = text; path = time.hpp.bak; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,11 +66,11 @@
 			isa = PBXGroup;
 			children = (
 				610A1C382279642A00D286EE /* main.cpp */,
-				610A1C3F2279694A00D286EE /* fast_ALS.cpp */,
-				610A1C402279694A00D286EE /* fast_ALS.hpp */,
-				610A1C42227970E200D286EE /* rating.cpp */,
-				610A1C44227E190D00D286EE /* time.cpp */,
-				610A1C45227E190D00D286EE /* time.hpp */,
+				610A1C3F2279694A00D286EE /* fast_ALS.hpp */,
+				610A1C402279694A00D286EE /* fast_ALS.hpp.bak */,
+				610A1C42227970E200D286EE /* rating.hpp */,
+				610A1C44227E190D00D286EE /* time.hpp */,
+				610A1C45227E190D00D286EE /* time.hpp.bak */,
 			);
 			path = fast_ALS;
 			sourceTree = "<group>";
@@ -131,9 +131,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				610A1C46227E190D00D286EE /* time.cpp in Sources */,
-				610A1C412279694A00D286EE /* fast_ALS.cpp in Sources */,
-				610A1C43227970E200D286EE /* rating.cpp in Sources */,
+				610A1C46227E190D00D286EE /* time.hpp in Sources */,
+				610A1C412279694A00D286EE /* fast_ALS.hpp in Sources */,
+				610A1C43227970E200D286EE /* rating.hpp in Sources */,
 				610A1C392279642A00D286EE /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
