@@ -11,7 +11,19 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cmath>
+#include <assert.h>
 #include "fast_ALS.hpp"
+#include <stdio.h>
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
+#include "time.hpp"
+#include "rating.hpp"
+
+
+using namespace Eigen;
+typedef Eigen::SparseMatrix<double> SpMat;
+typedef Eigen::Triplet<double> T;
 //#include "rating.hpp"
 
 
@@ -27,12 +39,18 @@ int main(int argc, const char * argv[])
     double reg = 0.01;
     double alpha = 0.75;
     
+    
     //处理原始数据
-    //ReadRatings_GlobalSplit()
     //为什么是static?
+    static int topK = 10;
+    static int threadNum = 100;
     static int userCount;
     static int itemCount;
+    
+    
     std::cout <<"Holdone out splitting" <<std::endl;
+    
+    // Step 1. Construct data structure for sorting.
     std::cout << "Sort items for each user."<<std::endl;
     int64 startTime = LogTimeMM::getSystemTime();
     std::vector<std::vector<Rating>> user_ratings;
@@ -42,18 +60,11 @@ int main(int argc, const char * argv[])
         fprintf(stderr, "Error: cannot open the file %s\n", input_filename);
         exit(EXIT_FAILURE);
     }
-//    char line[1024]={0};
-//    std::string  x = "";
-//    std::string  y = "";
-//    std::string  z = "";
-//    std::string  q = "";
     std::string line;
     int user_id;
     int item_id;
     float score;
-    long timestamp;
-
-    std::cout<<"dsds"<<std::endl;
+    long timestamp = 0;
     while (std::getline(fin, line)) {
         std::istringstream word(line);
         word >> user_id;
@@ -79,42 +90,80 @@ int main(int argc, const char * argv[])
             user_ratings.push_back(std::vector<Rating>());
         }
         user_ratings.rbegin() -> push_back(rating);
+        userCount = fmax(userCount, rating.userId);
+        itemCount = fmax(itemCount, rating.itemId);
+    }
+    userCount++;
+    itemCount++;
+    assert (userCount == user_ratings.size());
+    //std::cout << userCount << "\r" << itemCount<< std::endl;
+    
+    
+//    { // test
+////        std::ofstream fout("/Users/yangsong/Desktop/fast_ALS/data/output.txt");
+//        FILE *fout = fopen("/Users/yangsong/Desktop/fast_ALS/data/output.txt", "w");
+//        for (const auto &user_vector : user_ratings) {
+//            for (const auto & rating : user_vector) {
+////                fout << rating.userId << "\t"
+////                << rating.itemId << "\t"
+////                << rating.score << "\t"
+////                << rating.timestamp << std::endl;
+//                fprintf(fout,"%d\t%d\t%.1f\t%ld\n",
+//                                    rating.userId,
+//                                    rating.itemId,
+//                                    rating.score,
+//                                    rating.timestamp);
+//            }
+//        }
+//        fclose(fout);
+//    }
+    // Step 2. Sort the ratings of each user by time (small->large).
+    
+    for ( int u = 0; u < userCount; u++){
+        sort(user_ratings[u].begin(),user_ratings[u].end(),LessSort);
     }
     
-    { // test
-//        std::ofstream fout("/Users/yangsong/Desktop/fast_ALS/data/output.txt");
-        FILE *fout = fopen("/Users/yangsong/Desktop/fast_ALS/data/output.txt", "w");
-        for (const auto &user_vector : user_ratings) {
-            for (const auto & rating : user_vector) {
-//                fout << rating.userId << "\t"
-//                << rating.itemId << "\t"
-//                << rating.score << "\t"
-//                << rating.timestamp << std::endl;
-                fprintf(fout,"%d\t%d\t%.1f\t%ld\n",
-                                    rating.userId,
-                                    rating.itemId,
-                                    rating.score,
-                                    rating.timestamp);
+    std::cout << "sorting time:"<< LogTimeMM::getSystemTime() - startTime << std::endl;
+    // Step 3. Generated splitted matrices (implicit 0/1 settings)
+    std::cout << "Generate rating matrices"<<std::endl;
+    int64 startTime1 = LogTimeMM::getSystemTime();
+    static SparseMatrix<int> trainMatrix(userCount, itemCount);
+    static std::vector<Rating> testRatings;
+    for ( int u = 0; u <userCount; u++){
+        std::vector<Rating> rating = user_ratings[u];
+        for (int i = rating.size() - 1; i >= 0; i--) {
+            user_id = rating[i].userId;
+            item_id = rating[i].itemId;
+            if (i == rating.size() - 1) { // test
+                testRatings.push_back(rating[i]);
+            } else { // train
+                trainMatrix.coeffRef(user_id, item_id) =  1;
+                
             }
         }
-        fclose(fout);
     }
+    trainMatrix.makeCompressed();
+    std::cout << "Generated splitted matrices time:"<< LogTimeMM::getSystemTime() - startTime1 << std::endl;
+    std::cout << "data\t"<< dataset_name<<std::endl;
+    std::cout << "#Users\t"<< userCount<<std::endl;
+    std::cout << "#items\t"<< itemCount<<std::endl;
+    std::cout << "#Ratings\t"<< trainMatrix.cols()<<"\t"<< "tests\t"<<testRatings.size()<< std::endl;
+    
+    std::cout <<"=========================================="<<std::endl;
+    
+//    ItemPopularity popularity = new ItemPopularity(trainMatrix, testRatings, topK, threadNum);
+//    evaluate_model(popularity, "Popularity");
+    
+
+
+
+}
+
 
     
-//    while(fin.getline(line, sizeof(line)))
-//    {
-//        std::stringstream  word(line);
-//        word >> x;
-//        word >> y;
-//        word >> z;
-//        word >> q;
-//        Rating rating(std::string x, std::string y, std::string z, std::string q);
-//        std::cout << rating.userId;
-//        if (user_ratings.size() < rating.userId + 1){
-////            vector<Rating> temp;
-//
-//            user_ratings.push_back(std::vector<Rating>());
-//            user_ratings.rbegin() -> push_back(rating);
-//        }
-//    }
-}
+    
+    
+    
+    
+
+

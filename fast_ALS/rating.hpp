@@ -49,7 +49,7 @@ struct Rating {
             score(_score),
             timestamp(_timestamp) { }
 };
-
+bool LessSort(Rating a, Rating b){ return(a.timestamp < b.timestamp);}
 #endif
 
 
