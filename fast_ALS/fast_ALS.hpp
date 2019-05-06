@@ -26,23 +26,22 @@
 
 using namespace Eigen;
 
-typedef Eigen::SparseMatrix<double> SpMat;
-typedef Eigen::Triplet<double> T;
+typedef Eigen::SparseMatrix<int> SpMat;
+typedef Eigen::SparseMatrix<double> SpMat_D;
+typedef Eigen::Triplet<double> T_d;
 typedef Eigen::Matrix<double, Dynamic, Dynamic> MatrixXd;
 typedef Eigen::Matrix<double, Dynamic, 1> VectorXd;
 
-const int userCount = 10000;
-const int itemCount = 100000;
-
 class MF_fastALS{
 public:
-    int factors = 10;
-    int maxIter = 500;     // maximum iterations.
-    double reg = 0.01;     // regularization parameters
-    double w0 = 1;
-    double init_mean = 0;  // Gaussian mean for init V
-    double init_stdev = 0.01;
-    SpMat trainMatrix;// Gaussian std-dev for init V
+    int factors;
+    int maxIter;     // maximum iterations.
+    double reg;     // regularization parameters
+    double w0;
+    double init_mean;  // Gaussian mean for init V
+    double init_stdev;
+    int itemCount;
+    int userCount;
     std::vector<Rating> testRatings;
     MatrixXd U;
     MatrixXd V;
@@ -54,20 +53,21 @@ public:
     
     bool showprogress;
     bool showloss;
-    SpMat W;
+    SpMat trainMatrix;
+    SpMat_D W;
     std::vector<double> Wi;
     double w_new = 1;
     MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
-               int topK, int threadNum, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
+               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
     double predict (int u, int i);
     double showLoss (int iter, long start, double loss_pre);
     double loss();
+    void buildModel();
 
 private:
     void initS();
 
 protected:
-    void buildModel();
     void update_user(int u);
     void update_item(int i);
 };
@@ -77,12 +77,11 @@ protected:
 
 //类构造函数
 MF_fastALS::MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
-               int topK, int threadNum, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss){
+               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss){
     //trainMatrix是列压缩的
     trainMatrix = trainMatrix;
     testRatings = testRatings;
     topK = topK;
-    threadNum = threadNum;
     factors = factors;
     maxIter = maxIter;
     w0 = w0;

@@ -22,8 +22,8 @@
 
 
 using namespace Eigen;
-typedef Eigen::SparseMatrix<double> SpMat;
-typedef Eigen::Triplet<double> T;
+typedef Eigen::SparseMatrix<int> SpMat;
+typedef Eigen::Triplet<int> T;
 //#include "rating.hpp"
 
 
@@ -32,18 +32,21 @@ int main(int argc, const char * argv[])
     std::string dataset_name = "yelp";
     std::string method = "FastALS";
     double w0 = 10;
-    bool showProgress = false;
-    bool showLoss = true;
+    bool showprogress = false;
+    bool showloss = true;
     int factors = 64;
     int maxIter = 500;
     double reg = 0.01;
     double alpha = 0.75;
+    double init_mean = 0;  // Gaussian mean for init V
+    double init_stdev = 0.01;
+    
     
     
     //处理原始数据
     //为什么是static?
     static int topK = 10;
-    static int threadNum = 100;
+//    static int threadNum = 100;
     static int userCount;
     static int itemCount;
     
@@ -53,6 +56,7 @@ int main(int argc, const char * argv[])
     // Step 1. Construct data structure for sorting.
     std::cout << "Sort items for each user."<<std::endl;
     int64 startTime = LogTimeMM::getSystemTime();
+   
     std::vector<std::vector<Rating>> user_ratings;
     char input_filename[] = "/Users/yangsong/Desktop/fast_ALS/data/yelp.rating";
     std::ifstream  fin(input_filename);
@@ -127,8 +131,11 @@ int main(int argc, const char * argv[])
     // Step 3. Generated splitted matrices (implicit 0/1 settings)
     std::cout << "Generate rating matrices"<<std::endl;
     int64 startTime1 = LogTimeMM::getSystemTime();
-    static SparseMatrix<int> trainMatrix(userCount, itemCount);
+    static SpMat trainMatrix(userCount, itemCount);
     static std::vector<Rating> testRatings;
+    std::vector<T> tripletList;
+//    tripletList.reserve(estimation_of_entries);
+    
     for ( int u = 0; u <userCount; u++){
         std::vector<Rating> rating = user_ratings[u];
         for (int i = rating.size() - 1; i >= 0; i--) {
@@ -137,12 +144,13 @@ int main(int argc, const char * argv[])
             if (i == rating.size() - 1) { // test
                 testRatings.push_back(rating[i]);
             } else { // train
-                trainMatrix.coeffRef(user_id, item_id) =  1;
-                
+                tripletList.push_back(T(user_id,item_id, 1));
             }
+//                trainMatrix.insert(user_id, item_id) =  1;
         }
     }
-    trainMatrix.makeCompressed();
+    trainMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+//    trainMatrix.makeCompressed();
     std::cout << "Generated splitted matrices time:"<< LogTimeMM::getSystemTime() - startTime1 << std::endl;
     std::cout << "data\t"<< dataset_name<<std::endl;
     std::cout << "#Users\t"<< userCount<<std::endl;
@@ -153,9 +161,62 @@ int main(int argc, const char * argv[])
     
 //    ItemPopularity popularity = new ItemPopularity(trainMatrix, testRatings, topK, threadNum);
 //    evaluate_model(popularity, "Popularity");
+
+//    long start = System.currentTimeMillis();
+//    model.buildModel();
+//    public void buildModel() {
+//        for (int i = 0; i < itemCount; i++) {
+//            // Measure popularity by number of reviews received.
+//            item_popularity[i] = trainMatrix.getColRef(i).itemCount();
+//        }
+//    }
+    double item_popularity[itemCount];
+    for (int i = 0; i < itemCount; i++) {
+        item_popularity[i] = trainMatrix.outerIndexPtr()[i+1] - trainMatrix.outerIndexPtr()[i];
+//        std::cout <<item_popularity[i] <<std::endl;
+    }
+//    model.evaluate(utestRatings);
+    assert (userCount == testRatings.size());
+    for (int u = 0; u < userCount; u++)
+        assert( u == testRatings[u].userId);
+    double hits[userCount];
+    double ndcgs[userCount];
+    double precs[userCount];
     
-
-
+    
+//    下面的用多线程splited by users, here用cuda
+//    for ( int u = 0 ; u < userCount; u++){
+//        double result[3];
+//
+//
+//    }
+//
+//
+//    MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
+//               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
+    
+    MF_fastALS als(trainMatrix, testRatings, topK, factors, maxIter, w0, alpha, reg, init_mean,init_stdev, showprogress,showloss);
+//    evaluate_model(als, "MF_ALS")
+//    public static double[] evaluate_model(TopKRecommender model, String name) {
+//        long start = System.currentTimeMillis();
+//        model.buildModel();
+//        model.evaluate(testRatings);
+//
+//        double[] res = new double[3];
+//        res[0] = model.hits.mean();
+//        res[1] = model.ndcgs.mean();
+//        res[2] = model.precs.mean();
+//        System.out.printf("%s\t <hr, ndcg, prec>:\t %.4f\t %.4f\t %.4f [%s]\n",
+//                          name, res[0], res[1], res[2],
+//                          Printer.printTime(System.currentTimeMillis() - start));
+//        return res;
+//    }
+    
+    
+    als.buildModel();
+    
+    
+    
 
 }
 
