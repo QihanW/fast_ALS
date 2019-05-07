@@ -22,11 +22,13 @@
 #include <string>
 #include "time.hpp"
 #include "rating.hpp"
+#include <math.h>
 
 
 using namespace Eigen;
 
 typedef Eigen::SparseMatrix<int> SpMat;
+typedef Eigen::SparseMatrix<int, RowMajor> SpMat_R;
 typedef Eigen::SparseMatrix<double> SpMat_D;
 typedef Eigen::Triplet<double> T_d;
 typedef Eigen::Matrix<double, Dynamic, Dynamic> MatrixXd;
@@ -54,15 +56,20 @@ public:
     bool showprogress;
     bool showloss;
     SpMat trainMatrix;
+    SpMat trainMatrix_R;
     SpMat_D W;
     std::vector<double> Wi;
     double w_new = 1;
-    MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
+    MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rating> testRatings,
                int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
     double predict (int u, int i);
     double showLoss (int iter, long start, double loss_pre);
     double loss();
     void buildModel();
+    double* evaluate_for_user(int u, int gtItem, int topK);
+    double getHitRatio(std::vector<int> rankList, int gtItem);
+    double getNDCG(std::vector<int> rankList, int gtItem);
+    double getPrecision(std::vector<int> rankList, int gtItem);
 
 private:
     void initS();
@@ -76,10 +83,11 @@ protected:
 
 
 //类构造函数
-MF_fastALS::MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
-               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss){
+MF_fastALS::MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rating> testRatings,
+               int topK,int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss){
     //trainMatrix是列压缩的
     trainMatrix = trainMatrix;
+    trainMatrix_R = trainMatrix_R;
     testRatings = testRatings;
     topK = topK;
     factors = factors;
@@ -108,17 +116,11 @@ MF_fastALS::MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
         Wi[i] = w0 * p[i] / Z;
    
     SparseMatrix<double> W(userCount, itemCount);
-    
-    for (int u = 0; u < itemCount; u++)
-        for( int i = trainMatrix.outerIndexPtr()[u]; i < trainMatrix.outerIndexPtr()[u+1]; i++)
-            W.insert(u,trainMatrix.innerIndexPtr()[i]) = 1;
-    //在栈里不需要释放内存m，以后需要改成new分配的！！
-    double prediction_users [userCount];
-    double prediction_items [itemCount];
-    double rating_users [userCount];
-    double rating_items [itemCount];
-    double w_users [userCount];
-    double w_items [itemCount];
+    std::vector<T_d> tripletList;
+    for (int u = 0; u < userCount; u++)
+        for( int i = trainMatrix_R.outerIndexPtr()[u]; i < trainMatrix_R.outerIndexPtr()[u+1]; i++)
+            tripletList.push_back(T_d(u,trainMatrix_R.innerIndexPtr()[i],1));
+    W.setFromTriplets(tripletList.begin(), tripletList.end());
     
     //Init model parameters
     MatrixXd U(userCount, factors);
@@ -180,14 +182,14 @@ void MF_fastALS::buildModel(){
 void MF_fastALS::update_user(int u) {
     //现在需要把col-major的trainMatrix改成row-major的, how??
     std::vector<int> itemList;
-    for (int i = trainMatrix.outerIndexPtr()[u]; i < trainMatrix.outerIndexPtr()[u+1] ; i++)
-        itemList.push_back(trainMatrix.innerIndexPtr()[i]);
+    for (int i = trainMatrix_R.outerIndexPtr()[u]; i < trainMatrix_R.outerIndexPtr()[u+1] ; i++)
+        itemList.push_back(trainMatrix_R.innerIndexPtr()[i]);
     if (itemList.size() == 0)        return;    // user has no ratings
     // prediction cache for the user
     
     for (int i : itemList) {
         prediction_items[i] = predict(u, i);
-        rating_items[i] = trainMatrix.coeffRef(u, i);
+        rating_items[i] = trainMatrix_R.coeffRef(u, i);
         w_items[i] = W.coeffRef(u,i);
     }
     
@@ -291,11 +293,11 @@ double MF_fastALS:: loss() {
     for (int u = 0; u < userCount; u++) {
         double l = 0;
         std::vector<int> itemList;
-        for (int i = trainMatrix.outerIndexPtr()[u]; i < trainMatrix.outerIndexPtr()[u+1] ; i++)
-            itemList.push_back(trainMatrix.innerIndexPtr()[i]);
+        for (int i = trainMatrix_R.outerIndexPtr()[u]; i < trainMatrix_R.outerIndexPtr()[u+1] ; i++)
+            itemList.push_back(trainMatrix_R.innerIndexPtr()[i]);
         for (int i :itemList) {
             double pred = predict(u, i);
-            l += W.coeffRef(u, i) * pow(trainMatrix.coeffRef(u, i) - pred, 2);
+            l += W.coeffRef(u, i) * pow(trainMatrix_R.coeffRef(u, i) - pred, 2);
             l -= Wi[i] * pow(pred, 2);
         }
         l +=  U.row(u)*SV * U.row(u).transpose();
@@ -304,6 +306,71 @@ double MF_fastALS:: loss() {
     
     return L;
 }
+double* MF_fastALS::evaluate_for_user(int u, int gtItem, int topK){
+    static double result[3];
+    std::map<int, double> map_item_score;
+    double maxScore;
+//    int gtItem = testRatings[u].itemId;
+//        double maxScore = predict(u, gtItem)
+    maxScore = predict(u, gtItem);
+    int countLarger = 0;
+    for (int i = 0; i < itemCount; i++) {
+        double score = predict(u, i);
+        map_item_score.insert(std::make_pair(i,score));
+        if (score >maxScore) countLarger++;
+        if (countLarger > topK)  return result;
+            //            if (countLarger > topK){
+            //                hits[u]  = result[0];
+            //                ndcgs[u] = result[1];
+            //                precs[u] = result[2];
+        }
+    std::vector<int> rankList;
+    std::vector<std::pair<int, double>>top_K(topK);
+    std::partial_sort_copy( map_item_score.begin(),
+                            map_item_score.end(),
+                            top_K.begin(),
+                            top_K.end(),
+                            [](std::pair<const int, int> const& l,
+                            std::pair<const int, int> const& r)
+                            {
+                                return l.second > r.second;
+                            });
+    for (auto const& p: top_K)
+    {
+        rankList.push_back(p.first);
+        
+    }
+    result[0] = getHitRatio(rankList, gtItem);
+    result[1] = getNDCG(rankList, gtItem);
+    result[2] = getPrecision(rankList, gtItem);
+    return result;
+}
+double MF_fastALS::getHitRatio(std::vector<int> rankList, int gtItem){
+    for (int item : rankList) {
+        if (item == gtItem)    return 1;
+    }
+    return 0;
+}
+double MF_fastALS::getNDCG(std::vector<int> rankList, int gtItem) {
+    for (int i = 0; i < rankList.size(); i++) {
+        int item = rankList[i];
+        if (item == gtItem)
+            return log(2) / log(i+2);
+    }
+    return 0;
+}
+double MF_fastALS::getPrecision(std::vector<int> rankList, int gtItem) {
+    for (int i = 0; i < rankList.size(); i++) {
+        int item = rankList[i];
+        if (item == gtItem)
+            return 1.0 / (i + 1);
+    }
+    return 0;
+}
+    
+
+
+
 
 #endif
 

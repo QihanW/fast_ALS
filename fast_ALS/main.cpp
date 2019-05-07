@@ -19,12 +19,14 @@
 #include <Eigen/Dense>
 #include "time.hpp"
 #include "rating.hpp"
+#include <unordered_map>
 
 
 using namespace Eigen;
 typedef Eigen::SparseMatrix<int> SpMat;
+typedef Eigen::SparseMatrix<int, RowMajor> SpMat_R;
 typedef Eigen::Triplet<int> T;
-//#include "rating.hpp"
+typedef Eigen::Matrix<double, Dynamic, 1> VectorXd;
 
 
 int main(int argc, const char * argv[])
@@ -40,6 +42,9 @@ int main(int argc, const char * argv[])
     double alpha = 0.75;
     double init_mean = 0;  // Gaussian mean for init V
     double init_stdev = 0.01;
+    VectorXd hits;
+    VectorXd ndcgs;
+    VectorXd precs;
     
     
     
@@ -132,10 +137,12 @@ int main(int argc, const char * argv[])
     std::cout << "Generate rating matrices"<<std::endl;
     int64 startTime1 = LogTimeMM::getSystemTime();
     static SpMat trainMatrix(userCount, itemCount);
-    static std::vector<Rating> testRatings;
-    std::vector<T> tripletList;
-//    tripletList.reserve(estimation_of_entries);
+    static SpMat_R trainMatrix_R(userCount, itemCount);
     
+    static std::vector<Rating> testRatings;
+   
+//    tripletList.reserve(estimation_of_entries);
+     std::vector<T> tripletList;
     for ( int u = 0; u <userCount; u++){
         std::vector<Rating> rating = user_ratings[u];
         for (int i = rating.size() - 1; i >= 0; i--) {
@@ -150,6 +157,7 @@ int main(int argc, const char * argv[])
         }
     }
     trainMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+    trainMatrix_R.setFromTriplets(tripletList.begin(), tripletList.end());
 //    trainMatrix.makeCompressed();
     std::cout << "Generated splitted matrices time:"<< LogTimeMM::getSystemTime() - startTime1 << std::endl;
     std::cout << "data\t"<< dataset_name<<std::endl;
@@ -170,32 +178,23 @@ int main(int argc, const char * argv[])
 //            item_popularity[i] = trainMatrix.getColRef(i).itemCount();
 //        }
 //    }
-    double item_popularity[itemCount];
-    for (int i = 0; i < itemCount; i++) {
-        item_popularity[i] = trainMatrix.outerIndexPtr()[i+1] - trainMatrix.outerIndexPtr()[i];
-//        std::cout <<item_popularity[i] <<std::endl;
-    }
+//    double item_popularity[itemCount];
+//    for (int i = 0; i < itemCount; i++) {
+//        item_popularity[i] = trainMatrix.outerIndexPtr()[i+1] - trainMatrix.outerIndexPtr()[i];
+//
+//    }
 //    model.evaluate(utestRatings);
     assert (userCount == testRatings.size());
     for (int u = 0; u < userCount; u++)
         assert( u == testRatings[u].userId);
-    double hits[userCount];
-    double ndcgs[userCount];
-    double precs[userCount];
-    
-    
+
 //    下面的用多线程splited by users, here用cuda
-//    for ( int u = 0 ; u < userCount; u++){
-//        double result[3];
-//
-//
-//    }
-//
-//
+
 //    MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
 //               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
     
-    MF_fastALS als(trainMatrix, testRatings, topK, factors, maxIter, w0, alpha, reg, init_mean,init_stdev, showprogress,showloss);
+    MF_fastALS als(trainMatrix, trainMatrix_R, testRatings, topK, factors, maxIter, w0, alpha, reg, init_mean,init_stdev, showprogress,showloss);
+    std::cout<<"success"<<std::endl;
 //    evaluate_model(als, "MF_ALS")
 //    public static double[] evaluate_model(TopKRecommender model, String name) {
 //        long start = System.currentTimeMillis();
@@ -214,17 +213,24 @@ int main(int argc, const char * argv[])
     
     
     als.buildModel();
+    for ( int u = 0 ; u < userCount; u++){
+        double * result = new double[3];
+        int gtItem = testRatings[u].itemId;
+        result = als.evaluate_for_user(u, gtItem,topK);
+        hits[u] = result[0];
+        ndcgs[u] = result[1];
+        precs[u] = result[2];
+//        delete[] result;
+    }
+    double res [3];
+    res[0] = hits.mean();
+    res[1] = ndcgs.mean();
+    res[2] = precs.mean();
     
-    
-    
-
+    std::cout << "hr, ndcg, prec:"<<res[0]<< "\t" << res[1]<<"\t" <<res[2]<<std::endl;
 }
 
+    
 
-    
-    
-    
-    
-    
 
 
