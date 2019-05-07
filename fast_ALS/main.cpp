@@ -167,23 +167,6 @@ int main(int argc, const char * argv[])
     
     std::cout <<"=========================================="<<std::endl;
     
-//    ItemPopularity popularity = new ItemPopularity(trainMatrix, testRatings, topK, threadNum);
-//    evaluate_model(popularity, "Popularity");
-
-//    long start = System.currentTimeMillis();
-//    model.buildModel();
-//    public void buildModel() {
-//        for (int i = 0; i < itemCount; i++) {
-//            // Measure popularity by number of reviews received.
-//            item_popularity[i] = trainMatrix.getColRef(i).itemCount();
-//        }
-//    }
-//    double item_popularity[itemCount];
-//    for (int i = 0; i < itemCount; i++) {
-//        item_popularity[i] = trainMatrix.outerIndexPtr()[i+1] - trainMatrix.outerIndexPtr()[i];
-//
-//    }
-//    model.evaluate(utestRatings);
     assert (userCount == testRatings.size());
     for (int u = 0; u < userCount; u++)
         assert( u == testRatings[u].userId);
@@ -195,22 +178,7 @@ int main(int argc, const char * argv[])
     
     MF_fastALS als(trainMatrix, trainMatrix_R, testRatings, topK, factors, maxIter, w0, alpha, reg, init_mean,init_stdev, showprogress,showloss);
     std::cout<<"success"<<std::endl;
-//    evaluate_model(als, "MF_ALS")
-//    public static double[] evaluate_model(TopKRecommender model, String name) {
-//        long start = System.currentTimeMillis();
-//        model.buildModel();
-//        model.evaluate(testRatings);
-//
-//        double[] res = new double[3];
-//        res[0] = model.hits.mean();
-//        res[1] = model.ndcgs.mean();
-//        res[2] = model.precs.mean();
-//        System.out.printf("%s\t <hr, ndcg, prec>:\t %.4f\t %.4f\t %.4f [%s]\n",
-//                          name, res[0], res[1], res[2],
-//                          Printer.printTime(System.currentTimeMillis() - start));
-//        return res;
-//    }
-    
+
     
     als.buildModel();
     for ( int u = 0 ; u < userCount; u++){
@@ -220,7 +188,7 @@ int main(int argc, const char * argv[])
         hits[u] = result[0];
         ndcgs[u] = result[1];
         precs[u] = result[2];
-//        delete[] result;
+        delete[] result;
     }
     double res [3];
     res[0] = hits.mean();
