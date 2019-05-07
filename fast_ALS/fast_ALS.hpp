@@ -68,7 +68,7 @@ public:
     double showLoss (int iter, long start, double loss_pre);
     double loss();
     void buildModel();
-    double* evaluate_for_user(int u, int gtItem, int topK);
+    std::vector<double> evaluate_for_user(int u, int gtItem, int topK);
     double getHitRatio(std::vector<int> rankList, int gtItem);
     double getNDCG(std::vector<int> rankList, int gtItem);
     double getPrecision(std::vector<int> rankList, int gtItem);
@@ -188,6 +188,7 @@ void MF_fastALS::buildModel(){
         int64 start = LogTimeMM::getSystemTime();
         for (int u = 0; u < userCount; u ++) {
             update_user(u);
+            
         }
         // Update item latent vectors
         for (int i = 0; i < itemCount; i ++) {
@@ -257,7 +258,7 @@ void MF_fastALS::update_user(int u) {
 }
 void MF_fastALS::update_item(int i) {
     std::vector<int> userList;
-    for (int j = trainMatrix.outerIndexPtr()[i]; i < trainMatrix.outerIndexPtr()[i+1] ; j++)
+    for (int j = trainMatrix.outerIndexPtr()[i]; j < trainMatrix.outerIndexPtr()[i+1] ; j++)
         userList.push_back(trainMatrix.innerIndexPtr()[j]);
     if (userList.size() == 0)        return; // item has no ratings.
     // prediction cache for the item
@@ -332,8 +333,8 @@ double MF_fastALS:: loss() {
     
     return L;
 }
-double* MF_fastALS::evaluate_for_user(int u, int gtItem, int topK){
-    static double result[3];
+std::vector<double> MF_fastALS::evaluate_for_user(int u, int gtItem, int topK){
+    std::vector<double> result(3);
     std::map<int, double> map_item_score;
     double maxScore;
 //    int gtItem = testRatings[u].itemId;

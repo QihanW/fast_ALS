@@ -37,7 +37,7 @@ int main(int argc, const char * argv[])
     bool showprogress = false;
     bool showloss = true;
     int factors = 64;
-    int maxIter = 2;
+    int maxIter = 10;
     double reg = 0.01;
     double alpha = 0.75;
     double init_mean = 0;  // Gaussian mean for init V
@@ -72,7 +72,11 @@ int main(int argc, const char * argv[])
     int item_id;
     float score;
     long timestamp = 0;
+    
+//    int line_count = 0;
     while (std::getline(fin, line)) {
+//        ++line_count;
+//        if (line_count == 10000) break; //test
         std::istringstream word(line);
         word >> user_id;
         word >> item_id;
@@ -134,10 +138,10 @@ int main(int argc, const char * argv[])
     // Step 3. Generated splitted matrices (implicit 0/1 settings)
     std::cout << "Generate rating matrices"<<std::endl;
     int64 startTime1 = LogTimeMM::getSystemTime();
-    static SpMat trainMatrix(userCount, itemCount);
-    static SpMat_R trainMatrix_R(userCount, itemCount);
+    SpMat trainMatrix(userCount, itemCount);
+    SpMat_R trainMatrix_R(userCount, itemCount);
     
-    static std::vector<Rating> testRatings;
+    std::vector<Rating> testRatings;
    
 //    tripletList.reserve(estimation_of_entries);
     std::vector<T> tripletList;
@@ -197,18 +201,18 @@ int main(int argc, const char * argv[])
 
     
     als.buildModel();
-    hits. resize(1,userCount);
-    ndcgs.resize(1,userCount);
-    precs.resize(1,userCount);
+    hits. resize(userCount);
+    ndcgs.resize(userCount);
+    precs.resize(userCount);
     //begin evaluation
     for ( int u = 0 ; u < userCount; u++){
-        double * result = new double[3];
+        std::vector<double> result(3);
         int gtItem = testRatings[u].itemId;
         result = als.evaluate_for_user(u, gtItem,topK);
-        hits (1,u) = result[0];
-        ndcgs(1,u) = result[1];
-        precs(1,u) = result[2];
-        delete[] result;
+        hits (u) = result[0];
+        ndcgs(u) = result[1];
+        precs(u) = result[2];
+        
     }
     double res [3];
 //    VectorXd hits;
