@@ -44,6 +44,8 @@ public:
     double init_stdev;
     int itemCount;
     int userCount;
+    int topK;
+    double alpha;
     std::vector<Rating> testRatings;
     MatrixXd U;
     MatrixXd V;
@@ -61,7 +63,7 @@ public:
     std::vector<double> Wi;
     double w_new = 1;
     MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rating> testRatings,
-               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
+               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss, int userCount, int itemCount);
     double predict (int u, int i);
     double showLoss (int iter, long start, double loss_pre);
     double loss();
@@ -83,21 +85,46 @@ protected:
 
 
 //类构造函数
-MF_fastALS::MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rating> testRatings,
-               int topK,int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss){
+MF_fastALS::MF_fastALS(
+                       SpMat _trainMatrix,
+                       SpMat_R _trainMatrix_R,
+                       std::vector<Rating> _testRatings,
+                       int _topK,
+                       int _factors,
+                       int _maxIter,
+                       double _w0,
+                       double _alpha,
+                       double _reg,
+                       double _init_mean,
+                       double _init_stdev,
+                       bool _showprogress,
+                       bool _showloss,
+                       int _userCount,
+                       int _itemCount)
+{
     //trainMatrix是列压缩的
-    trainMatrix = trainMatrix;
-    trainMatrix_R = trainMatrix_R;
-    testRatings = testRatings;
-    topK = topK;
-    factors = factors;
-    maxIter = maxIter;
-    w0 = w0;
-    reg = reg;
-    init_mean = init_mean;
-    init_stdev = init_stdev;
-    showloss = showloss;
-    showprogress = showprogress;
+    trainMatrix = _trainMatrix;
+    trainMatrix_R = _trainMatrix_R;
+    testRatings = _testRatings;
+    topK = _topK;
+    factors = _factors;
+    maxIter = _maxIter;
+    w0 = _w0;
+    reg = _reg;
+    alpha = _alpha;
+    init_mean = _init_mean;
+    init_stdev = _init_stdev;
+    showloss = _showloss;
+    showprogress = _showprogress;
+    itemCount = _itemCount;
+    userCount = _userCount;
+    prediction_users.resize(userCount);
+    prediction_items.resize(itemCount);
+    rating_users.resize(userCount);
+    rating_items.resize(itemCount);
+    w_users.resize(userCount);
+    w_items.resize(itemCount);
+    
     
     double sum = 0, Z = 0;
   
@@ -111,11 +138,11 @@ MF_fastALS::MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rat
         p[i] = pow(p[i], alpha);
         Z += p[i];
     }
-    double Wi[itemCount];
+    Wi.resize(itemCount);
     for (int i = 0; i < itemCount; i ++)
         Wi[i] = w0 * p[i] / Z;
-   
-    SparseMatrix<double> W(userCount, itemCount);
+    
+    W.resize(userCount, itemCount);
     std::vector<T_d> tripletList;
     for (int u = 0; u < userCount; u++)
         for( int i = trainMatrix_R.outerIndexPtr()[u]; i < trainMatrix_R.outerIndexPtr()[u+1]; i++)
@@ -123,11 +150,11 @@ MF_fastALS::MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rat
     W.setFromTriplets(tripletList.begin(), tripletList.end());
     
     //Init model parameters
-    MatrixXd U(userCount, factors);
-    MatrixXd V(userCount, factors);
+    U.resize(userCount, factors);
+    V.resize(itemCount, factors);
     
     //高斯分布 初始化稠密矩阵 基于给定的均值标准差
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    unsigned seed = (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
     std::normal_distribution<double> distribution (init_mean, init_stdev);
     for ( int i = 0; i < userCount; i++)
@@ -141,8 +168,8 @@ MF_fastALS::MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rat
 
 void MF_fastALS::initS(){
     //矩阵乘法
-    SU = U.transpose()*U;
-    MatrixXd SV(factors, factors);
+    SU = U.transpose()*U;//64*64
+    SV.resize(factors, factors);
     for (int f = 0; f < factors; f ++) {
         for (int k = 0; k <= f; k ++) {
             double val = 0;
@@ -162,16 +189,15 @@ void MF_fastALS::buildModel(){
         for (int u = 0; u < userCount; u ++) {
             update_user(u);
         }
-        
         // Update item latent vectors
         for (int i = 0; i < itemCount; i ++) {
             update_item(i);
         }
         
         // Show progress
-        if (showprogress) {
-//            showProgress(iter, start, testRatings);
-        }
+//        if (showprogress) {
+////            showProgress(iter, start, testRatings);
+//        }
         // Show loss
         if (showloss)
             loss_pre = showLoss(iter, start, loss_pre);
@@ -278,13 +304,13 @@ void MF_fastALS::update_item(int i) {
     }
 }
 double MF_fastALS::predict(int u, int i) {
-    return U.row(u)*V.col(i);
+    return U.row(u) * V.row(i).transpose();
 }
 double MF_fastALS::showLoss(int iter, long start, double loss_pre) {
     int64 start1 = LogTimeMM::getSystemTime();
     double loss_cur = loss();
     std::string symbol = loss_pre >= loss_cur ? "-" : "+";
-    std::cout <<"Iter=" << iter << start1 - start << symbol << "loss:" <<loss_cur << LogTimeMM::getSystemTime() - start1 << std::endl;
+    std::cout <<"Iter=" << iter << " " << start1 - start << symbol << " loss:" <<loss_cur <<" "<< LogTimeMM::getSystemTime() - start1 << std::endl;
    
     return loss_cur;
 }
@@ -300,7 +326,7 @@ double MF_fastALS:: loss() {
             l += W.coeffRef(u, i) * pow(trainMatrix_R.coeffRef(u, i) - pred, 2);
             l -= Wi[i] * pow(pred, 2);
         }
-        l +=  U.row(u)*SV * U.row(u).transpose();
+        l +=  U.row(u) * SV * U.row(u).transpose();
         L += l;
     }
     

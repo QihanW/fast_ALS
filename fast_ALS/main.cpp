@@ -37,7 +37,7 @@ int main(int argc, const char * argv[])
     bool showprogress = false;
     bool showloss = true;
     int factors = 64;
-    int maxIter = 500;
+    int maxIter = 2;
     double reg = 0.01;
     double alpha = 0.75;
     double init_mean = 0;  // Gaussian mean for init V
@@ -48,12 +48,10 @@ int main(int argc, const char * argv[])
     
     
     
-    //处理原始数据
-    //为什么是static?
-    static int topK = 10;
-//    static int threadNum = 100;
-    static int userCount;
-    static int itemCount;
+
+    int topK = 10;
+    int userCount;
+    int itemCount;
     
     
     std::cout <<"Holdone out splitting" <<std::endl;
@@ -142,10 +140,10 @@ int main(int argc, const char * argv[])
     static std::vector<Rating> testRatings;
    
 //    tripletList.reserve(estimation_of_entries);
-     std::vector<T> tripletList;
+    std::vector<T> tripletList;
     for ( int u = 0; u <userCount; u++){
         std::vector<Rating> rating = user_ratings[u];
-        for (int i = rating.size() - 1; i >= 0; i--) {
+        for (int i = (int) rating.size() - 1; i >= 0; i--) {
             user_id = rating[i].userId;
             item_id = rating[i].itemId;
             if (i == rating.size() - 1) { // test
@@ -158,6 +156,8 @@ int main(int argc, const char * argv[])
     }
     trainMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
     trainMatrix_R.setFromTriplets(tripletList.begin(), tripletList.end());
+    trainMatrix.makeCompressed();
+    trainMatrix_R.makeCompressed();
 //    trainMatrix.makeCompressed();
     std::cout << "Generated splitted matrices time:"<< LogTimeMM::getSystemTime() - startTime1 << std::endl;
     std::cout << "data\t"<< dataset_name<<std::endl;
@@ -176,21 +176,45 @@ int main(int argc, const char * argv[])
 //    MF_fastALS(SpMat trainMatrix, std::vector<Rating> testRatings,
 //               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss);
     
-    MF_fastALS als(trainMatrix, trainMatrix_R, testRatings, topK, factors, maxIter, w0, alpha, reg, init_mean,init_stdev, showprogress,showloss);
+    MF_fastALS als(
+                   trainMatrix,
+                   trainMatrix_R,
+                   testRatings,
+                   topK,
+                   factors,
+                   maxIter,
+                   w0,
+                   alpha,
+                   reg,
+                   init_mean,
+                   init_stdev,
+                   showprogress,
+                   showloss,
+                   userCount,
+                   itemCount);
+    
     std::cout<<"success"<<std::endl;
 
     
     als.buildModel();
+    hits. resize(1,userCount);
+    ndcgs.resize(1,userCount);
+    precs.resize(1,userCount);
+    //begin evaluation
     for ( int u = 0 ; u < userCount; u++){
         double * result = new double[3];
         int gtItem = testRatings[u].itemId;
         result = als.evaluate_for_user(u, gtItem,topK);
-        hits[u] = result[0];
-        ndcgs[u] = result[1];
-        precs[u] = result[2];
+        hits (1,u) = result[0];
+        ndcgs(1,u) = result[1];
+        precs(1,u) = result[2];
         delete[] result;
     }
     double res [3];
+//    VectorXd hits;
+//    VectorXd ndcgs;
+//    VectorXd precs;
+//
     res[0] = hits.mean();
     res[1] = ndcgs.mean();
     res[2] = precs.mean();
