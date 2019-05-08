@@ -197,7 +197,7 @@ int main(int argc, const char * argv[])
                    userCount,
                    itemCount);
     
-    std::cout<<"success"<<std::endl;
+//    std::cout<<"success"<<std::endl;
 
     
     als.buildModel();
@@ -223,7 +223,7 @@ int main(int argc, const char * argv[])
     res[1] = ndcgs.mean();
     res[2] = precs.mean();
     
-    std::cout << "hr, ndcg, prec:"<<res[0]<< "\t" << res[1]<<"\t" <<res[2]<<std::endl;
+    std::cout << "hr, ndcg, prec:" << res[0] << "\t" << res[1]<< "\t" <<res[2]<<std::endl;
 }
 
     

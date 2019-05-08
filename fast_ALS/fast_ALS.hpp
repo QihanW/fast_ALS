@@ -62,8 +62,21 @@ public:
     SpMat_D W;
     std::vector<double> Wi;
     double w_new = 1;
-    MF_fastALS(SpMat trainMatrix, SpMat_R trainMatrix_R, std::vector<Rating> testRatings,
-               int topK, int factors, int maxIter, double w0, double alpha, double reg, double init_mean, double init_stdev, bool showprogress, bool showloss, int userCount, int itemCount);
+    MF_fastALS(SpMat trainMatrix,
+               SpMat_R trainMatrix_R,
+               std::vector<Rating> testRatings,
+               int topK,
+               int factors,
+               int maxIter,
+               double w0,
+               double alpha,
+               double reg,
+               double init_mean,
+               double init_stdev,
+               bool showprogress,
+               bool showloss,
+               int userCount,
+               int itemCount);
     double predict (int u, int i);
     double showLoss (int iter, long start, double loss_pre);
     double loss();
@@ -311,7 +324,7 @@ double MF_fastALS::showLoss(int iter, long start, double loss_pre) {
     int64 start1 = LogTimeMM::getSystemTime();
     double loss_cur = loss();
     std::string symbol = loss_pre >= loss_cur ? "-" : "+";
-    std::cout <<"Iter=" << iter << " " << start1 - start << symbol << " loss:" <<loss_cur <<" "<< LogTimeMM::getSystemTime() - start1 << std::endl;
+    std::cout <<"Iter=" << iter << " " << start1 - start << " "<<symbol << " loss:" <<loss_cur <<" "<< LogTimeMM::getSystemTime() - start1 << std::endl;
    
     return loss_cur;
 }

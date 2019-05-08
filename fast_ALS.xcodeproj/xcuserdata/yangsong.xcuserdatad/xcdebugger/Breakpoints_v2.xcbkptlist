@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "fast_ALS/fast_ALS.hpp"
-            timestampString = "578964740.312095"
+            timestampString = "578969006.823071"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "186"
-            endingLineNumber = "186"
-            landmarkName = "MF_fastALS::buildModel()"
+            startingLineNumber = "199"
+            endingLineNumber = "199"
+            landmarkName = "MF_fastALS::initS()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,12 +26,44 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "fast_ALS/fast_ALS.hpp"
-            timestampString = "578964740.312488"
+            timestampString = "578969006.823153"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "202"
+            endingLineNumber = "202"
+            landmarkName = "MF_fastALS::initS()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fast_ALS/fast_ALS.hpp"
+            timestampString = "578969006.82321"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "194"
+            endingLineNumber = "194"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "fast_ALS/fast_ALS.hpp"
+            timestampString = "578969006.823262"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "189"
             endingLineNumber = "189"
-            landmarkName = "MF_fastALS::buildModel()"
+            landmarkName = "MF_fastALS::MF_fastALS( SpMat _trainMatrix, SpMat_R _trainMatrix_R, std::vector&lt;Rating&gt; _testRatings, int _topK, int _factors, int _maxIter, double _w0, double _alpha, double _reg, double _init_mean, double _init_stdev, bool _showprogress, bool _showloss, int _userCount, int _itemCount)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -42,45 +74,29 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "fast_ALS/fast_ALS.hpp"
-            timestampString = "578964740.31276"
+            timestampString = "578969006.8233089"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "181"
-            endingLineNumber = "181"
-            landmarkName = "MF_fastALS::initS()"
+            startingLineNumber = "191"
+            endingLineNumber = "191"
+            landmarkName = "MF_fastALS::MF_fastALS( SpMat _trainMatrix, SpMat_R _trainMatrix_R, std::vector&lt;Rating&gt; _testRatings, int _topK, int _factors, int _maxIter, double _w0, double _alpha, double _reg, double _init_mean, double _init_stdev, bool _showprogress, bool _showloss, int _userCount, int _itemCount)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "fast_ALS/fast_ALS.hpp"
-            timestampString = "578964740.313015"
+            filePath = "fast_ALS/time.hpp"
+            timestampString = "578969006.823357"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "176"
-            endingLineNumber = "176"
-            landmarkName = "MF_fastALS::initS()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "fast_ALS/fast_ALS.hpp"
-            timestampString = "578964740.31326"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "178"
-            endingLineNumber = "178"
-            landmarkName = "MF_fastALS::initS()"
-            landmarkType = "7">
+            startingLineNumber = "15"
+            endingLineNumber = "15"
+            landmarkName = "int64"
+            landmarkType = "16">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
