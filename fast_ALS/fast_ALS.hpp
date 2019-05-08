@@ -220,7 +220,7 @@ void MF_fastALS::buildModel(){
 }
 
 void MF_fastALS::update_user(int u) {
-    //现在需要把col-major的trainMatrix改成row-major的, how??
+    //trainMatrix_R是行压缩的
     std::vector<int> itemList;
     for (int i = trainMatrix_R.outerIndexPtr()[u]; i < trainMatrix_R.outerIndexPtr()[u+1] ; i++)
         itemList.push_back(trainMatrix_R.innerIndexPtr()[i]);
